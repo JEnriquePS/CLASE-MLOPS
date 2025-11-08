@@ -4,19 +4,19 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
         with:
           lfs: true           # ← keep only if you use Git LFS
 
       - uses: actions/setup-python@v4
       - uses: iterative/setup-cml@v1
+        # test -f data/base_encuestados_v2.csv || { echo "::error file=data/data.csv::Missing data/base_encuestados_v2.csv"; exit 1; }
 
       - name: Train model
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pip install -r requirements.txt
-          test -f data/base_encuestados_v2.csv || { echo "::error file=data/data.csv::Missing data/base_encuestados_v2.csv"; exit 1; }
           python train.py
 
           echo "## Model Metrics" > report.md
