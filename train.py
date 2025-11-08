@@ -7,8 +7,12 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
-from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, mean_squared_error, confusion_matrix
+from sklearn.metrics import accuracy_score, classification_report, mean_absolute_error, mean_squared_error, confusion_matrix, precision_recall_fscore_support
 from pathlib import Path
+import matplotlib
+matplotlib.use('Agg')  # Backend for saving plots without display
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 import re
 import pickle
@@ -110,3 +114,55 @@ print("\nEvaluation results:\n", metrics_output)
 
 with open('metrics.txt', 'w', encoding='utf-8') as outfile:
     outfile.write(metrics_output)
+
+# --- Generate plot comparing metrics per category ---
+# Extract precision, recall, f1-score per class
+precision, recall, f1, support = precision_recall_fscore_support(y_test_labels, y_preds_labels, zero_division=0)
+
+# Set style for better visualization
+sns.set_style("whitegrid")
+plt.rcParams['font.size'] = 10
+
+# Create DataFrame with metrics
+metrics_df = pd.DataFrame({
+    'Precision': precision,
+    'Recall': recall,
+    'F1-Score': f1
+}, index=label_names)
+
+# Create figure and axis
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Plot grouped bar chart
+x = np.arange(len(label_names))
+width = 0.25
+
+bars1 = ax.bar(x - width, metrics_df['Precision'], width, label='Precision', 
+               color='#3498db', edgecolor='black', linewidth=0.7)
+bars2 = ax.bar(x, metrics_df['Recall'], width, label='Recall', 
+               color='#2ecc71', edgecolor='black', linewidth=0.7)
+bars3 = ax.bar(x + width, metrics_df['F1-Score'], width, label='F1-Score', 
+               color='#e74c3c', edgecolor='black', linewidth=0.7)
+
+# Customize plot
+ax.set_xlabel('Categorías NPS', fontsize=12, fontweight='bold')
+ax.set_ylabel('Score', fontsize=12, fontweight='bold')
+ax.set_title('Comparación de Métricas por Categoría', fontsize=14, fontweight='bold', pad=20)
+ax.set_xticks(x)
+ax.set_xticklabels(label_names, fontsize=11)
+ax.set_ylim(0, 1.1)
+ax.legend(loc='upper right', fontsize=10, framealpha=0.9)
+ax.grid(axis='y', alpha=0.3, linestyle='--')
+
+# Add value labels on bars
+for bars in [bars1, bars2, bars3]:
+    for bar in bars:
+        height = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width()/2., height + 0.02,
+                f'{height:.3f}',
+                ha='center', va='bottom', fontsize=8, fontweight='bold')
+
+plt.tight_layout()
+plt.savefig('metrics_by_category.png', dpi=150, bbox_inches='tight', facecolor='white')
+plt.close()
+print("\nGráfica guardada en: metrics_by_category.png")
