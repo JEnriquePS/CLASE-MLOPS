@@ -16,7 +16,7 @@ jobs:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pip install -r requirements.txt
-          test -f data/data.csv || { echo "::error file=data/data.csv::Missing data/data.csv"; exit 1; }
+          test -f data/base_encuestados_v2.csv || { echo "::error file=data/data.csv::Missing data/base_encuestados_v2.csv"; exit 1; }
           python train.py
 
           echo "## Model Metrics" > report.md
