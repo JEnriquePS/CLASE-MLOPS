@@ -13,8 +13,15 @@ jobs:
         run: |
           pip install -r requirements.txt
           python train.py
-
+          
+          # Crear reporte
+          echo "# Resultados del Modelo NPS" > report.md
+          echo "" >> report.md
           cat metrics.txt >> report.md
+          echo "" >> report.md
+          echo "## Gráfica Original" >> report.md
           echo "![](./plot.png)" >> report.md
+          echo "" >> report.md
+          echo "## Comparación de Métricas por Categoría" >> report.md
           echo "![](./metrics_by_category.png)" >> report.md
           cml comment create report.md
